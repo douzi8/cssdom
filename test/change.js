@@ -122,6 +122,15 @@ describe('change css dom', function() {
     });
 
     it('selector', function() {
+      var css = new CssDom('.cls1{width: 200px;}@media print{.cls2{}.cls1{}}');
+      var cls = css.selector('.cls1');
+
+      cls.forEach(function(dom) {
+        assert.deepEqual(dom.selectors, ['.cls1'])
+      });
+    });
+
+    it('selector assign', function() {
       var css = new CssDom('.cls1{width: 200px;}@media print{.cls2{}}');
 
       css.selector('.cls1', {
@@ -162,9 +171,24 @@ describe('change css dom', function() {
           }
         ]
       });
-    });
+    });    
 
     it('property', function() {
+      var css = new CssDom('.cls1{background: url();}.cls2{background:url();}');
+      var child = css.property('background');
+
+      child.forEach(function(dom) {
+        css.css(dom, {
+          background: 'url(demo.png)'
+        });
+      });
+
+      assert.deepEqual(css.dom[0].declarations, {
+        background: 'url(demo.png)'
+      });
+    });
+
+    it('property assign', function() {
       var css = new CssDom('.cls1{background: url();}.cls2{background:url();}');
 
       css.property('background', {

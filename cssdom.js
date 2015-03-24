@@ -373,28 +373,50 @@ CssDom.prototype.css = function(dom, css) {
  * @description
  * Change css dom by selector
  * @example
+ * css.selector('.cls');
  * css.selector('.cls', {key: 'value', 'background': function(value) { return value; }  });
  */
 CssDom.prototype.selector = function(selector, css) {
+  var result = [];
+
   this._search(function(dom) {
     if (dom.selectors.indexOf(selector) !== -1) {
-      this.css(dom, css);  
+      if (css) {
+        this.css(dom, css);  
+      } else {
+        result.push(dom);
+      }
     }
   });
+
+  if (!css) {
+    return result;
+  }
 };
 
 /**
  * @description
  * Change css dom by property
  * @example
+ * css.property('background');
  * css.property('background', {key: 'value', 'background': function(value) { return value; }  });
  */
 CssDom.prototype.property = function(property, css) {
+  var result = [];
+
   this._search(function(dom) {
     if (dom.declarations[property]) {
-      this.css(dom, css);  
+      if (css) {
+        this.css(dom, css);  
+      } else {
+        result.push(dom);
+      }
     }
   });
+
+  if (!css) {
+    return result;
+  }
 };
 
 /**
@@ -444,6 +466,7 @@ CssDom.prototype.validateDom = function(dom) {
         if (!dom.value) {
           throw new Error('@charset miss value');
         }
+        
         if (dom.value.indexOf('/*') === 0) {
           throw new Error('comment value do not need /**/');
         }

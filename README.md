@@ -92,11 +92,20 @@ The structure of css dom, it's an array with object item, list item type
   value: '1'
 }
 ```
+### css.css(dom, css)
+Change css declarations
+* {object} ``dom`` required
+* {object} ``css`` required
+```js
+css.css(css.dom[0], {
+  'color': 'red'
+});
+```
 
 ### css.selector(selector, css)
-Change css by selector
+Change css by selector, if css is empty, it will return css dom
 * {string} ``selector`` required
-* {object} ``css`` required
+* {object} ``css``
 ```js
 css.selector('.cls', {
   width: '200px',
@@ -108,6 +117,8 @@ css.selector('.cls', {
   // delete color key
   color: ''
 });
+
+css.selector('.cls');
 ```
 
 ### css.property(property, css)
@@ -120,10 +131,22 @@ css.property('background', {
     return value;
   }
 });
+
+var child = css.property('background');
+
+child.forEach(function(dom) {
+  css.css(dom, {
+    background: function(value) {
+      return value.replce(/url\(('[^']*'|"[^"]*"|[^)]*)\)/, function(src) {
+        return src;
+      });
+    }
+  });
+});
 ```
 
 ### css.unshift(dom)
-* {object} ``dom`` required
+* {object} ``dom`` required  
 Insert a new css dom to the top of css code
 ```js
 css.unshift({
@@ -133,7 +156,7 @@ css.unshift({
 ```
 
 ### css.push(dom)
-* {object} ``dom`` required
+* {object} ``dom`` required  
 Push a new css dom
 ```js
 css.push({
@@ -147,7 +170,7 @@ css.push({
 ```
 
 ### css.validateDom(dom)
-* {object|array} ``dom`` required
+* {object|array} ``dom`` required  
 Validate the css dom, it's useful for handle css dom by youself
 ```
 css.validateDom({});
