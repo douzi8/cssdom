@@ -24,6 +24,21 @@ describe('@media', function() {
     }]);
   });
 
+  it('miss spacing', function() {
+    var content = '@medianame{ ';
+
+    assert.throws(
+      function() {
+        var css = new CssDom(content);
+      },
+      function(err) {
+        if (/@media/.test(err)) {
+          return true;
+        }
+      }
+    );
+  });
+
   it('miss name', function() {
     var content = '@media { ';
 

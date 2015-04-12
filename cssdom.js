@@ -156,9 +156,13 @@ CssDom.prototype._atcharset = function() {
  * @media <media-query>
  */
 CssDom.prototype._atmedia = function() {
-  var match = this._match(/^@media\s+/);
+  var match = this._match(/^@media/);
 
   if (!match) return false;
+
+  if (!this._match(/^\s+/)) {
+    return this._error('@media missing spacing before name')
+  }
 
   var name = this._match(/^[\(\)\s\w-:,]+/);
 
