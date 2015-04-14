@@ -162,7 +162,7 @@ CssDom.prototype._atmedia = function() {
   if (!match) return false;
 
   if (!this._match(/^\s+/)) {
-    return this._error('@media missing spacing before name')
+    return this._error('@media missing spacing before name');
   }
   // fixed -o-min-device-pixel-ratio: 2/1 bug
   var name = this._match(/^[\(\)\s\w-:,\/]+/);
@@ -306,7 +306,7 @@ var fixedProp = (function() {
 
   return function() {
     return '__' + i++;
-  }
+  };
 })();
 
 CssDom.prototype._declaration = function() {
@@ -545,8 +545,7 @@ CssDom.prototype.stringify = function() {
 
     for (var i in dom.declarations) {
       // fixed same property bug
-      i = i.replace(/__\w$/, '');
-      code.push(i + ':' + uglify.declarations(dom.declarations[i]) + ';');
+      code.push(i.replace(/__\w+$/, '') + ':' + dom.declarations[i] + ';');
     }
 
     code.push('}');
