@@ -542,12 +542,7 @@ CssDom.prototype.stringify = function() {
 
   function rule(dom) {
     code.push(dom.selectors.join(',') + '{');
-
-    for (var i in dom.declarations) {
-      // fixed same property bug
-      code.push(i.replace(/__\w+$/, '') + ':' + dom.declarations[i] + ';');
-    }
-
+    code.push(uglify(dom.declarations));
     code.push('}');
   }
 

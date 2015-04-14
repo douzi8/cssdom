@@ -2,6 +2,11 @@ var assert = require('assert');
 var color = require('../lib/color');
 
 describe('Uglify css color', function() {
+  it('word', function() {
+    assert.equal(color('tan'), '#d2b48c');
+    assert.equal(color('important'), 'important');
+  });
+
   it('color', function() {
     var value = 'blanchedalmond';
 
