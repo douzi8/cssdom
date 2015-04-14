@@ -300,6 +300,15 @@ CssDom.prototype._selector = function() {
   return selector.map(clean);
 };
 
+// fixed css rule with same property bug
+var fixedProp = (function() {
+  var i = 0;
+
+  return function() {
+    return '__' + i++;
+  }
+})();
+
 CssDom.prototype._declaration = function() {
   var propertyReg = /^[\*_]?[\w-]+/;
   var valueReg = /^(?:'[^']*'|"[^"]*"|\([^\)]*\)|,\s*|[^;}\n])+/;
@@ -331,7 +340,15 @@ CssDom.prototype._declaration = function() {
 
     // Skip to next declaration
     this._match(/^;/);
-    declaration[property[0].trim()] = value ? value[0].trim() : '';
+    property = property[0].trim();
+    value = value ? value[0].trim() : '';
+    
+    
+    if (declaration[property]) {
+      property = property + fixedProp();
+    }
+
+    declaration[property] = value;
   }
 
   this._close();
@@ -527,6 +544,8 @@ CssDom.prototype.stringify = function() {
     code.push(dom.selectors.join(',') + '{');
 
     for (var i in dom.declarations) {
+      // fixed same property bug
+      i = i.replace(/__\w$/, '');
       code.push(i + ':' + uglify.declarations(dom.declarations[i]) + ';');
     }
 
