@@ -15,7 +15,8 @@
     "dom",
     "css handle",
     "syntax",
-    "validate"
+    "validate",
+    "uglify"
   ],
   "author": "douzi <liaowei08@gmail.com>",
   "license": "ISC",

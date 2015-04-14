@@ -1,5 +1,6 @@
 var strip = require('strip-comment');
 var util = require('utils-extend');
+var uglify = require('./lib/uglify');
 
 function clean(str) {
   return str.replace(/\s+/, ' ').trim();
@@ -526,7 +527,7 @@ CssDom.prototype.stringify = function() {
     code.push(dom.selectors.join(',') + '{');
 
     for (var i in dom.declarations) {
-      code.push(i + ':' + dom.declarations[i] + ';');
+      code.push(i + ':' + uglify.declarations(dom.declarations[i]) + ';');
     }
 
     code.push('}');

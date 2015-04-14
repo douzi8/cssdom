@@ -178,7 +178,7 @@ css.validateDom([{}]);
 ```
 
 ### css.stringify()
-Return css code
+Uglify css code.
 ```js
 css.stringify();
 ```

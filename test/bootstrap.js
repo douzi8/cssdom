@@ -24,7 +24,7 @@ describe('bootstrap', function() {
   });
 
   it('stringify', function() {
-    var contentmin = readFileSync('vendor/bootstrap.min.css');
+    var contentmin = readFileSync('vendor/bootstrap.css');
     var cssmin = new CssDom(contentmin);
 
     writeFileSync('vendor/bootstrap.dest.css', cssmin.stringify());
