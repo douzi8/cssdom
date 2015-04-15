@@ -6,13 +6,13 @@ describe('css rule', function() {
     var code = '.cls{display:-webkit-box;display:-moz-box;display:-webkit-flex;display:flex;}';
     var css = new CssDom(code);
 
-    assert.equal(code, css.stringify());
+    assert.equal('.cls{display:-webkit-box;display:-moz-box;display:-webkit-flex;display:flex}', css.stringify());
   });
 
   it('multiple semicolon', function() {
     var code = '.cls {color: red; ; ;}';
     var css = new CssDom(code);
 
-    assert.equal('.cls{color:#f00;}', css.stringify());
+    assert.equal('.cls{color:#f00}', css.stringify());
   });
 });

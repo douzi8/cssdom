@@ -1,10 +1,10 @@
 {
   "name": "cssdom",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Serialize css structure and stringify css dom, simplified change css code by program, and also support uglify",
   "main": "cssdom.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha --recursive"
   },
   "repository": {
     "type": "git",

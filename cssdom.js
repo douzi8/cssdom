@@ -301,13 +301,10 @@ CssDom.prototype._selector = function() {
 };
 
 // fixed css rule with same property bug
-var fixedProp = (function() {
-  var i = 0;
-
-  return function() {
-    return '__' + i++;
-  };
-})();
+var idCounter = 0;
+function fixedProp() {
+  return '__' + idCounter++;
+}
 
 CssDom.prototype._declaration = function() {
   var propertyReg = /^[\*_]?[\w-]+/;
@@ -541,7 +538,7 @@ CssDom.prototype.stringify = function() {
   var code = [];
 
   function rule(dom) {
-    code.push(dom.selectors.join(',') + '{');
+    code.push(dom.selectors.join(',').replace(/\s*>\s*/g, '>') + '{');
     code.push(uglify(dom.declarations));
     code.push('}');
   }

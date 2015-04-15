@@ -3,7 +3,8 @@ module.exports = function(grunt) {
   grunt.initConfig({
     jshint: {
       all: [
-        './cssdom.js'
+        './cssdom.js',
+        './lib/*.js'
       ]
     }
   });

@@ -1,5 +1,5 @@
 var assert = require('assert');
-var color = require('../lib/color');
+var color = require('../../lib/color');
 
 describe('Uglify css color', function() {
   it('word', function() {
@@ -16,7 +16,7 @@ describe('Uglify css color', function() {
 
   it('rgb', function() {
     assert.equal(color('rgb(255,0, 0)'), '#f00');
-    assert.equal(color('rgb (255,32, 80)'), '#ff2050');
+    assert.equal(color('rgb (255 , 32 , 80)'), '#ff2050');
   });
 
   it('lowercase', function() {
