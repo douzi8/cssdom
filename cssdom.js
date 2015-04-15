@@ -338,8 +338,8 @@ CssDom.prototype._declaration = function() {
       return this._error('Declaration error with missing ;');
     }
 
-    // Skip to next declaration
-    this._match(/^;/);
+    // Skip to next declaration, fixed like ``color: red; ;``
+    this._match(/^;(\s*;)*/);
     property = property[0].trim();
     value = value ? value[0].trim() : '';
     

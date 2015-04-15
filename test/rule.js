@@ -8,4 +8,11 @@ describe('css rule', function() {
 
     assert.equal(code, css.stringify());
   });
+
+  it('multiple semicolon', function() {
+    var code = '.cls {color: red; ; ;}';
+    var css = new CssDom(code);
+
+    assert.equal('.cls{color:#f00;}', css.stringify());
+  });
 });
