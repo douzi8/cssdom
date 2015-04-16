@@ -1,6 +1,6 @@
 {
   "name": "cssdom",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "Serialize css structure and stringify css dom, simplified change css code by program, and also support uglify",
   "main": "cssdom.js",
   "scripts": {

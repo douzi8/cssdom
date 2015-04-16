@@ -538,8 +538,8 @@ CssDom.prototype.stringify = function() {
   var code = [];
 
   function rule(dom) {
-    code.push(dom.selectors.join(',').replace(/\s*>\s*/g, '>') + '{');
-    code.push(uglify(dom.declarations));
+    code.push(uglify.selectors(dom.selectors) + '{');
+    code.push(uglify.declarations(dom.declarations));
     code.push('}');
   }
 

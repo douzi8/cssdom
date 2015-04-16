@@ -42,6 +42,15 @@ describe('Uglify margin and padding', function() {
         value: '10px 15px 20px 25px'
       }]);
 
+
+      var rule3 = [
+        { key: 'margin', value: '0 0 10px'}
+      ];
+      
+      assert.deepEqual(margin(rule3), [{
+        key: 'margin',
+        value: '0 0 10px'
+      }]);
     });
 
     it('four', function() {
