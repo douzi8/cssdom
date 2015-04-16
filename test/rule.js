@@ -15,4 +15,11 @@ describe('css rule', function() {
 
     assert.equal('.cls{color:#f00}', css.stringify());
   });
+
+  it('empty rule', function() {
+    var code = '.a{}.cls {}';
+    var css = new CssDom(code);
+
+    assert.equal('', css.stringify());
+  });
 });

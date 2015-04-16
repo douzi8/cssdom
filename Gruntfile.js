@@ -4,7 +4,8 @@ module.exports = function(grunt) {
     jshint: {
       all: [
         './cssdom.js',
-        './lib/*.js'
+        './lib/*.js',
+        '!./lib/cssdom.front.js'
       ]
     }
   });

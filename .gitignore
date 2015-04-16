@@ -3,3 +3,7 @@ test.js
 test.css
 npm-debug.log
 test/vendor/bootstrap.dest.css
+
+
+codemirror/
+lib/cssdom.front.js

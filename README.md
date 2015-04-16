@@ -17,7 +17,7 @@ npm test
 ### browserify
 Exports cssdom to front
 ```
-browserify cssdom.js -s CssDom > cssdom.front.js
+browserify cssdom.js -s CssDom > lib/cssdom.front.js
 ```
 
 ### online demo

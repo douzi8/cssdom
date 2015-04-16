@@ -538,9 +538,11 @@ CssDom.prototype.stringify = function() {
   var code = [];
 
   function rule(dom) {
-    code.push(uglify.selectors(dom.selectors) + '{');
-    code.push(uglify.declarations(dom.declarations));
-    code.push('}');
+    if (Object.keys(dom.declarations).length) {
+      code.push(uglify.selectors(dom.selectors) + '{');
+      code.push(uglify.declarations(dom.declarations));
+      code.push('}');
+    }
   }
 
   this.dom.forEach(function(dom) {
