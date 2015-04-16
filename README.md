@@ -20,6 +20,9 @@ Exports cssdom to front
 browserify cssdom.js -s CssDom > cssdom.front.js
 ```
 
+### online demo
+[http://douzi8.github.io/cssdom/](http://douzi8.github.io/cssdom/)
+
 ## API
 ### CssDom(str, filepath)
 * {string} ``str`` required  
