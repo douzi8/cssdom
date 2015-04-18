@@ -576,9 +576,23 @@ CssDom.prototype.stringify = function() {
   var code = [];
 
   function rule(dom) {
-    if (Object.keys(dom.declarations).length) {
+    var result = [];
+    var decs = dom.declarations;
+
+    // Object to array
+    for (var i in decs) {
+      var key = i.replace(/__\w+$/, '');
+      if (key !== 'comment') {
+        result.push({
+          key: key,
+          value: decs[i]
+        });
+      }
+    }
+
+    if (result.length) {
       code.push(uglify.selectors(dom.selectors) + '{');
-      code.push(uglify.declarations(dom.declarations));
+      code.push(uglify.declarations(result));
       code.push('}');
     }
   }
