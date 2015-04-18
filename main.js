@@ -51,7 +51,6 @@
     $('.js-dom-wrap').hide();
     $('.js-uglify-wrap').show();
 
-
     var domeValue = '';
     try {
       var css = new CssDom(value);
@@ -61,7 +60,31 @@
     }
 
     $('.js-uglify-txt').val(domeValue);
+  });
 
+  $('.js-beautify').click(function() {
+    var value = editor.getValue();
+    if (!value) return;
+
+    $('.js-dom-wrap').hide();
+    $('.js-uglify-wrap').show();
+    $('.js-beautify-form').show();
+    var opts = $('.js-beautify-form').serializeArray();
+    var options = {
+
+    };
+    opts.forEach(function(item) {
+      options[item.name] = item.value;
+    });
+    var domeValue = '';
+    try {
+      var css = new CssDom(value);
+      domeValue = css.beautify(options);
+    } catch (e) {
+      domeValue = e.message;
+    }
+
+    $('.js-uglify-txt').val(domeValue);
   });
 
 })();

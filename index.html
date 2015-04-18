@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <title>Cssdom by douzi8</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-   
+    <meta name="description" content="Serialize css structure and stringify css dom, simplified change css code by program, and also support uglify and beautify" />
+    <meta name="keywords" content="css, online, dom, uglify, beautify" />
     <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
     <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
@@ -32,7 +33,18 @@
       <div>
         <button class="js-create">Create dom</button>
         <button class="js-uglify">Uglify code</button>
+        <button class="js-beautify">Beautify code</button>
       </div>
+      <form class="js-beautify-form" style="margin-top: 20px;display: none;">
+        <div>
+          <label>indent</label>
+          <input type="text" name="indent" value="  ">
+        </div>
+        <div>
+          <label>separate rule</label>
+          <input type="checkbox" name="separateRule">
+        </div>
+      </form>
       <form class="js-dom-wrap"><textarea id="code-dom"></textarea></form>
       <div style="display: none;" class="js-uglify-wrap">
       <textarea class="js-uglify-txt" style="width: 100%;height: 300px;"></textarea>
