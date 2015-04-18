@@ -622,12 +622,19 @@ CssDom.prototype.beautify = function(options) {
   function rule(dom, child) {
     var childIndent = util.isUndefined(child) ? '' : options.indent;
     var selectors = childIndent + dom.selectors.join(',\n' + childIndent) + ' {\n';
+    var declaration;
 
     code.push(selectors);
 
     for (var i in dom.declarations) {
       var key = i.replace(/__\w+$/, '');
-      var declaration =  childIndent + options.indent + key + ': ' + dom.declarations[i] + ';\n';
+      
+      if (key === 'comment') {
+        declaration = childIndent + options.indent + '/*' + dom.declarations[i] + '*/\n';
+      } else {
+        declaration =  childIndent + options.indent + key + ': ' + dom.declarations[i] + ';\n';
+      }
+      
       code.push(declaration);
     }
 

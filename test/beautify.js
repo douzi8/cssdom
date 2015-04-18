@@ -33,4 +33,10 @@ describe('css beautify', function() {
       }), '@media print {\n  a {\n  }\n\n  b {\n  }\n\n}');
     });
   });
+
+  it('comment', function() {
+    var css = new CssDom('a{/*comment*/}');
+
+    assert.equal(css.beautify(), 'a {\n  /*comment*/\n}');
+  });
 });

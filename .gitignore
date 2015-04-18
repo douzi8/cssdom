@@ -1,6 +1,4 @@
 node_modules/
-test.js
-test.css
 npm-debug.log
 test/vendor/bootstrap.dest.css
 
