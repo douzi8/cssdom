@@ -1,7 +1,7 @@
 {
   "name": "cssdom",
-  "version": "1.0.13",
-  "description": "Serialize css structure and stringify css dom, simplified change css code by program, and also support uglify",
+  "version": "1.0.14",
+  "description": "Serialize css structure and stringify css dom, simplified change css code by program, and also support uglify and beautify",
   "main": "cssdom.js",
   "scripts": {
     "test": "mocha --recursive"
@@ -16,16 +16,16 @@
     "css handle",
     "syntax",
     "validate",
-    "uglify"
+    "uglify",
+    "beautify"
   ],
   "author": "douzi <liaowei08@gmail.com>",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/douzi8/cssdom/issues"
   },
   "homepage": "https://github.com/douzi8/cssdom",
   "dependencies": {
-    "strip-comment": "^1.1.3",
     "utils-extend": "^1.0.7"
   },
   "devDependencies": {

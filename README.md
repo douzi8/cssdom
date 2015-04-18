@@ -187,7 +187,20 @@ css.validateDom([{}]);
 ```
 
 ### css.stringify()
-Uglify css code.
+Uglify css code.  
+it will remove all comment, if you want to keep some comment, your comments will start with ``/*!``
+```css
+/*!
+ * keep this comment
+ */
+```
 ```js
 css.stringify();
 ```
+### css.beautify(options)
+Beautify css code
+* {object} [options]
+  * {string} [options.indent = '  ']  
+Code indent
+  * {boolean} [options.separateRule = false]  
+Separate rules by new lines, default is a blank line

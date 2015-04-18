@@ -1,14 +1,21 @@
-var strip = require('strip-comment');
 var util = require('utils-extend');
 var uglify = require('./lib/uglify');
+var stripComment = require('./lib/comment');
+var REG = require('./lib/reg');
 
 function clean(str) {
-  return str.replace(/\s+/, ' ').trim();
+  return str.replace(/\s+/g, ' ').trim();
+}
+
+// fixed css rule with same property bug
+var idCounter = 0;
+function fixedProp() {
+  return '__' + idCounter++;
 }
 
 function CssDom(str, filepath) {
   this.filepath = filepath || '';
-  this._str = strip.css(str, true).trimRight();
+  this._str = str.trimRight();
   this._line = 1;
   this._column = 1;
   this.dom = [];
@@ -19,7 +26,10 @@ CssDom.prototype._scanner = function() {
   this._atrule();
 
   while (this._str) {
-    this._whitespace();
+    if (this._skip('rule', this.dom)) {
+      continue;
+    }
+
     this._atrule() || this._rule();
   }
 };
@@ -38,7 +48,7 @@ CssDom.prototype._match = function(reg) {
 
 // Update search position and save line, column
 CssDom.prototype._updatePos = function(str) {
-  var lines = str.match(/\n/g);
+  var lines = str.match(REG.LINE);
   var l = str.length;
   if (lines) this._line += lines.length;
   var i = str.lastIndexOf('\n');
@@ -56,18 +66,49 @@ CssDom.prototype._error = function(msg) {
   throw new Error(msg);
 };
 
-CssDom.prototype._whitespace = function() {
-  this._match(/^\s+/);
+/**
+ * Skip empty string and comment.
+ * comment is rule comment or declaration comment.
+ */
+ // rule comment: /* rule */ a { }
+ // declaration comment: a { /* declaration */color: red; }
+CssDom.prototype._skip = function(type, obj) {
+  if (this._match(REG.WHITESPACE)) {
+    return true;
+  }
+
+  if (this._str[0] + this._str[1] !== '/*') {
+    return false;
+  }
+
+  var match = this._match(REG.COMMENT_REG);
+
+  if (!match) {
+    return this._error('Unexpected block comment /*');
+  }
+  
+  match = match[1].trim();
+
+  if (type === 'rule') {
+    obj.push({
+      type: 'comment',
+      value: match
+    });
+  } else if (type === 'declaration') {
+    obj['comment' + fixedProp()] = match;
+  }
+
+  return true;
 };
 
 CssDom.prototype._open = function() {
-  if (!this._match(/^\{/)) {
+  if (!this._match(REG.OPEN_BRACE)) {
     this._error('Missing {');
   }
 };
 
 CssDom.prototype._close = function() {
-  if (!this._match(/^\}/)) {
+  if (!this._match(REG.CLOSE_BRACE)) {
     this._error('Missing }');
   }
 };
@@ -129,7 +170,7 @@ CssDom.prototype._atcharset = function() {
 
   this._charsetChecked = true;
 
-  if (/^\s+/.test(match[0])) {
+  if (REG.WHITESPACE.test(match[0])) {
     return this._error('@charset can not after a space');
   }
 
@@ -161,7 +202,7 @@ CssDom.prototype._atmedia = function() {
 
   if (!match) return false;
 
-  if (!this._match(/^\s+/)) {
+  if (!this._match(REG.WHITESPACE)) {
     return this._error('@media missing spacing before name');
   }
   // fixed -o-min-device-pixel-ratio: 2/1 bug
@@ -177,7 +218,7 @@ CssDom.prototype._atmedia = function() {
   };
 
   while (this._str) {
-    this._whitespace();
+    this._skip('rule', this.dom);
 
     if (this._str[0] === '}') {
       break;
@@ -214,7 +255,7 @@ CssDom.prototype._atkeyframes = function() {
   };
 
   while (this._str) {
-    this._whitespace();
+    this._skip('rule', this.dom);
 
     if (this._str[0] === '}') {
       break;
@@ -277,17 +318,21 @@ CssDom.prototype._atimport = function() {
 CssDom.prototype._selector = function() {
   var selector = [];
   var match;
-  var selectorReg = /^(?:'[^']*'|"[^"]*"|[^{,])+/;
+  var selectorReg = REG.SELECTOR;
 
   while (this._str) {
-    this._whitespace();
+    if (this._skip()) {
+      continue;
+    }
+
     match = this._match(selectorReg);
 
     if (!match) {
       return this._error('Selector missing');
     }
-
-    selector.push(match[0]);
+    
+    match = clean(stripComment(match[0]));
+    selector.push(match);
 
     if (this._str[0] === '{') {
       break;
@@ -297,29 +342,23 @@ CssDom.prototype._selector = function() {
   }
 
   this._open();
-  return selector.map(clean);
+  return selector;
 };
 
-// fixed css rule with same property bug
-var idCounter = 0;
-function fixedProp() {
-  return '__' + idCounter++;
-}
-
 CssDom.prototype._declaration = function() {
-  var propertyReg = /^[\*_]?[\w-]+/;
-  var valueReg = /^(?:'[^']*'|"[^"]*"|\([^\)]*\)|,\s*|[^;}\n])+/;
   var declaration = {};
   var property, value;
 
   while (this._str) {
-    this._whitespace();
+    if (this._skip('declaration', declaration)) {
+      continue;
+    }
 
     if (this._str[0] === '}') {
       break;
     }
 
-    property = this._match(propertyReg);
+    property = this._match(REG.PROPERTY);
 
     if (!property) {
       return this._error('Declaration with property error');
@@ -329,7 +368,7 @@ CssDom.prototype._declaration = function() {
       return this._error('Declaration error with missing :');
     }
 
-    value = this._match(valueReg);
+    value = this._match(REG.VALUE);
 
     if (this._str[0] === '\n' && !/^\s*}/.test(this._str)) {
       return this._error('Declaration error with missing ;');
@@ -338,8 +377,7 @@ CssDom.prototype._declaration = function() {
     // Skip to next declaration, fixed like ``color: red; ;``
     this._match(/^;(\s*;)*/);
     property = property[0].trim();
-    value = value ? value[0].trim() : '';
-    
+    value = stripComment(value ? value[0] : '').trim();
     
     if (declaration[property]) {
       property = property + fixedProp();
@@ -564,11 +602,62 @@ CssDom.prototype.stringify = function() {
         code.push('}');
         break;
       case 'comment':
-        code.push('/*' + dom.value +'*/');
+        if (dom.value.indexOf('!') === 0) {
+          code.push('/*' + dom.value +'*/');
+        }
     }
   });
 
   return code.join('');
+};
+
+CssDom.prototype.beautify = function(options) {
+  options = util.extend({
+    indent: '  ',
+    separateRule: false
+  }, options);
+  var code = [];
+  var separateRule = options.separateRule ? '\n\n' : '\n';
+
+  function rule(dom, child) {
+    var childIndent = util.isUndefined(child) ? '' : options.indent;
+    var selectors = childIndent + dom.selectors.join(',\n' + childIndent) + ' {\n';
+
+    code.push(selectors);
+
+    for (var i in dom.declarations) {
+      var key = i.replace(/__\w+$/, '');
+      var declaration =  childIndent + options.indent + key + ': ' + dom.declarations[i] + ';\n';
+      code.push(declaration);
+    }
+
+    code.push(childIndent + '}' + separateRule);  
+  }
+
+  this.dom.forEach(function(dom) {
+    switch (dom.type) {
+      case 'charset':
+        code.push("@charset '" + dom.value + "';");
+        break;
+      case 'import':
+        code.push('@import ' + dom.value + ';');
+        break;
+      case 'rule':
+        rule(dom);
+        break;
+      case 'keyframes':
+      case 'media':
+        var vendor = dom.vendor ? dom.vendor : '';
+        code.push('@' + vendor + dom.type + ' ' + dom.value + ' {\n');
+        dom.rules.forEach(rule);
+        code.push('}' + separateRule);
+        break;
+      case 'comment':
+        code.push('/*' + dom.value +' */' + separateRule);
+    }
+  });
+
+  return code.join('').trim();
 };
 
 module.exports = CssDom;

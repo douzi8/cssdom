@@ -20,14 +20,10 @@ describe('bootstrap', function() {
     writeFileSync('vendor/bootstrap.dest.css', cssmin.stringify());
   });
 
-  it('bootstrap.css', function() {
+  it('beautify', function() {
     var content = readFileSync('vendor/bootstrap.css');
     var css = new CssDom(content);
 
-    var contentmin = readFileSync('vendor/bootstrap.dest.css');
-    var cssmin = new CssDom(contentmin);
-
-    assert.equal(css.dom.length, cssmin.dom.length);
+    writeFileSync('vendor/bootstrap.beautify.css', css.beautify());
   });
-
 });
