@@ -206,7 +206,7 @@ CssDom.prototype._atmedia = function() {
     return this._error('@media missing spacing before name');
   }
   // fixed -o-min-device-pixel-ratio: 2/1 bug
-  var name = this._match(/^[\(\)\s\w-:,\/]+/);
+  var name = this._match(/^[\(\)\s\w-:,\/@]+/);
 
   if (!name) return this._error('@media missing name');
 

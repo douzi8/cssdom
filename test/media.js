@@ -83,4 +83,10 @@ describe('@media', function() {
       }
     );
   });
+
+  it('@support', function() {
+    var css = new CssDom('@media and @supports{}');
+
+    assert.equal(css.stringify(), '@media and @supports{}');
+  });
 });

@@ -1,1 +1,5 @@
-a {/*comment*/color:red;}
+@media and @supports {
+  .cls {
+    color: red;
+  }
+}

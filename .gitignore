@@ -4,7 +4,7 @@ test/vendor/bootstrap.dest.css
 
 
 codemirror/
-lib/cssdom.front.js
+cssdom.front.js
 
 test/bootstrap.html
 test/vendor/
