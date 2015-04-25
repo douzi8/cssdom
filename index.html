@@ -10,11 +10,6 @@
     <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
     <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
-    
-    <!-- Create a simple CodeMirror instance -->
-    <link rel="stylesheet" href="codemirror/lib/codemirror.css">
-    <script src="codemirror/lib/codemirror.js"></script>
-    <script src="codemirror/mode/css/css.js"></script>
     <script src="lib/beautify.js"></script>
     <script src="lib/jquery.js"></script>
     <script src="lib/cssdom.front.js"></script>
@@ -29,28 +24,82 @@
     </section>
 
     <section class="main-content">
-      <form><textarea id="code"></textarea></form>
+<style>
+textarea {
+  display: block;
+  height: 150px;
+  width: 100%;
+}
+.clearfix:after{
+  display: block;
+  content: '';
+  clear: both;
+}
+.dom-left {
+  float: left;
+  width: 50%;
+}
+.dom-right {
+  float: right;
+  width: 49.5%;
+}
+.main-content h3 {
+  margin: 10px 0;
+}
+</style>
+<div class="clearfix">
+  <div class="dom-left">
+    <h3>Input css code here</h3>
+    <textarea id="txt" oninput="change()"></textarea>
+    <h3>css dom</h3>
+    <textarea id="txt4">
+    </textarea>
+  </div>
+  <div class="dom-right">
+    <h3>uglify css code</h3>
+    <textarea id="txt2">
+    </textarea>
+    <h3>Beautify css code</h3>
+    <form class="js-beautify-form" style="margin-top: 20px;">
       <div>
-        <button class="js-create">Create dom</button>
-        <button class="js-uglify">Uglify code</button>
-        <button class="js-beautify">Beautify code</button>
+        <label>indent</label>
+        <input type="text" name="indent" value="  ">
       </div>
-      <form class="js-beautify-form" style="margin-top: 20px;display: none;">
-        <div>
-          <label>indent</label>
-          <input type="text" name="indent" value="  ">
-        </div>
-        <div>
-          <label>separate rule</label>
-          <input type="checkbox" name="separateRule">
-        </div>
-      </form>
-      <form class="js-dom-wrap"><textarea id="code-dom"></textarea></form>
-      <div style="display: none;" class="js-uglify-wrap">
-      <textarea class="js-uglify-txt" style="width: 100%;height: 300px;"></textarea>
+      <div>
+        <label>separate rule</label>
+        <input type="checkbox" name="separateRule">
       </div>
+    </form>
+    <textarea id="txt3">
+    </textarea>
+  </div>
+</div>
+
+
+<script type="text/javascript" src="./cssdom.front.js"></script>
+<script type="text/javascript">
+
+function change() {
+  var code = document.getElementById('txt').value;
+  var css = new CssDom(code);
+  var opts = $('.js-beautify-form').serializeArray();
+  var options = {
+  };
+  opts.forEach(function(item) {
+    options[item.name] = item.value;
+  });
+
+  document.getElementById('txt2').innerHTML = css.stringify();
+  document.getElementById('txt3').innerHTML = css.beautify(options);
+  document.getElementById('txt4').value = js_beautify(JSON.stringify(css.dom), {
+        'indent_size': 1,
+        'indent_char': '\t'
+      });
+}
+
+change();
+</script>
     </section>
-<script src="./main.js"></script>
   </body>
 </html>
 

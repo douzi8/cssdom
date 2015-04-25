@@ -2,3 +2,5 @@ cssdom.front.js
 test/vendor/
 
 node_modules/
+
+test*
