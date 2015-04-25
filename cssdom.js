@@ -520,6 +520,16 @@ CssDom.prototype.stringify = function() {
     }
   }
 
+  function mediarule(dom) {
+    if (dom.type === 'comment') {
+      if (dom.value.indexOf('!') === 0) {
+        code.push('/*' + dom.value + '*/');
+      }
+    } else {
+      rule(dom);
+    }
+  }
+
   this.dom.forEach(function(dom) {
     switch (dom.type) {
       case 'charset':
@@ -535,7 +545,7 @@ CssDom.prototype.stringify = function() {
       case 'media':
         var vendor = dom.vendor ? dom.vendor : '';
         code.push('@' + vendor + dom.type + ' ' + dom.value + '{');
-        dom.rules.forEach(rule);
+        dom.rules.forEach(mediarule);
         code.push('}');
         break;
       case 'comment':
@@ -578,6 +588,14 @@ CssDom.prototype.beautify = function(options) {
     code.push(childIndent + '}' + separateRule);
   }
 
+  function mediarule(dom, index) {
+    if (dom.type === 'comment') {
+      code.push(options.indent + '/*' + dom.value + '*/' + separateRule);
+    } else {
+      rule(dom, index);
+    }
+  }
+
   this.dom.forEach(function(dom) {
     switch (dom.type) {
       case 'charset':
@@ -593,7 +611,7 @@ CssDom.prototype.beautify = function(options) {
       case 'media':
         var vendor = dom.vendor ? dom.vendor : '';
         code.push('@' + vendor + dom.type + ' ' + dom.value + ' {\n');
-        dom.rules.forEach(rule);
+        dom.rules.forEach(mediarule);
         code.push('}' + separateRule);
         break;
       case 'comment':

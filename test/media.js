@@ -29,4 +29,11 @@ describe('@media', function() {
 
     assert.equal(css.stringify(), '@media and @supports{}');
   });
+
+  it('media comment', function() {
+    var css = new CssDom('@media print{/*! comment */}');
+
+    assert.equal(css.stringify(), '@media print{/*! comment */}');
+    assert.equal(css.beautify(), '@media print {\n  /*! comment */\n}');
+  });
 });
