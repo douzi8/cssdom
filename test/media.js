@@ -24,66 +24,6 @@ describe('@media', function() {
     }]);
   });
 
-  it('miss spacing', function() {
-    var content = '@medianame{ ';
-
-    assert.throws(
-      function() {
-        var css = new CssDom(content);
-      },
-      function(err) {
-        if (/@media/.test(err)) {
-          return true;
-        }
-      }
-    );
-  });
-
-  it('miss name', function() {
-    var content = '@media { ';
-
-    assert.throws(
-      function() {
-        var css = new CssDom(content);
-      },
-      function(err) {
-        if (/@media/.test(err)) {
-          return true;
-        }
-      }
-    );
-  });
-
-  it('miss {', function() {
-    var content = '@media name';
-
-    assert.throws(
-      function() {
-        var css = new CssDom(content);
-      },
-      function(err) {
-        if (/\{/.test(err)) {
-          return true;
-        }
-      }
-    );
-  });
-
-  it('miss }', function() {
-    var content = '@media name {.cls{}';
-
-    assert.throws(
-      function() {
-        var css = new CssDom(content);
-      },
-      function(err) {
-        if (/\}/.test(err)) {
-          return true;
-        }
-      }
-    );
-  });
-
   it('@support', function() {
     var css = new CssDom('@media and @supports{}');
 

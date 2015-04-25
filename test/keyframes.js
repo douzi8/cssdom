@@ -33,49 +33,4 @@ describe('@keyframes', function() {
       }
     }]);
   });
-
-  it('miss name', function() {
-    var content = '@-o-keyframes ';
-
-    assert.throws(
-      function() {
-        var css = new CssDom(content);
-      },
-      function(err) {
-        if (/@keyframes/.test(err)) {
-          return true;
-        }
-      }
-    );
-  });
-
-  it('miss {', function() {
-    var content = '@-o-keyframes name ';
-
-    assert.throws(
-      function() {
-        var css = new CssDom(content);
-      },
-      function(err) {
-        if (/\{/.test(err)) {
-          return true;
-        }
-      }
-    );
-  });
-
-  it('miss }', function() {
-    var content = '@-o-keyframes name {.cls{}';
-
-    assert.throws(
-      function() {
-        var css = new CssDom(content);
-      },
-      function(err) {
-        if (/\}/.test(err)) {
-          return true;
-        }
-      }
-    );
-  });
 });

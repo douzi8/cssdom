@@ -8,3 +8,5 @@ cssdom.front.js
 
 test/bootstrap.html
 test/vendor/
+
+test*

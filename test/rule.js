@@ -22,4 +22,24 @@ describe('css rule', function() {
 
     assert.equal('', css.stringify());
   });
+
+  it('unopen', function() {
+    var css = new CssDom('a');
+
+    assert.deepEqual({
+      type: 'rule',
+      selectors: ['a'],
+      declarations: {}
+    }, css.dom[0]);
+  });
+
+  it('unclose', function() {
+    var css = new CssDom('a{');
+
+    assert.deepEqual({
+      type: 'rule',
+      selectors: ['a'],
+      declarations: {}
+    }, css.dom[0]);
+  });
 });

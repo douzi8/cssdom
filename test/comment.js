@@ -1,5 +1,4 @@
 var CssDom = require('../cssdom');
-var stripComment = require('../lib/comment');
 var assert = require('assert');
 
 describe('comment', function() {
@@ -7,31 +6,19 @@ describe('comment', function() {
     var content = '.cls{/* comment */ }';
     var css = new CssDom(content);
     
-    assert.equal(content.length, css._column - 1);
-  });
-
-  it('strip comment', function() {
-    assert.equal(stripComment('/**/'), '');
-    assert.equal(stripComment('a/**/'), 'a');
-    assert.equal(stripComment('a/**//*a*/'), 'a');
-    assert.equal(stripComment('a"b/**/"/**/'), 'a"b/**/"');
-  });
-
-  it('not normal', function() {
-    assert.equal(stripComment('"'), '"');
-    assert.equal(stripComment("'"), "'");
-    assert.equal(stripComment("a/*"), "a/*");
+    assert.equal(Object.keys(css.dom[0].declarations).length, 1);
   });
 
   it('rule comment', function() {
     assert.deepEqual(new CssDom('/* rule */').dom, [{
       type: 'comment',
-      value: 'rule'
+      value: ' rule '
     }]);
   });
 
   it('delcalration comment', function() {
-    var dom = new CssDom('a{/* rule */color: red; /* rule */}').dom;
+    var dom = new CssDom('a{/*rule*/color: red; /*rule*/}').dom;
+
     Object.keys(dom[0].declarations).forEach(function(key) {
       if (key.indexOf('comment') === 0) {
         assert.equal(dom[0].declarations[key], 'rule');

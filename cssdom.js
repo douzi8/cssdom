@@ -1,35 +1,28 @@
+var REG = require('./lib/reg');
 var util = require('utils-extend');
 var uglify = require('./lib/uglify');
-var stripComment = require('./lib/comment');
-var REG = require('./lib/reg');
-
-function clean(str) {
-  return str.replace(/\s+/g, ' ').trim();
-}
-
 // fixed css rule with same property bug
 var idCounter = 0;
+
 function fixedProp() {
   return '__' + idCounter++;
 }
 
-function CssDom(str, filepath) {
-  this.filepath = filepath || '';
+function clean(str) {
+  return str.replace(REG.COMMENT, '').replace(/\s+/g, ' ').trim();
+}
+
+function CssDom(str) {
   this._str = str.trimRight();
-  this._line = 1;
-  this._column = 1;
   this.dom = [];
   this._scanner();
 }
 
 CssDom.prototype._scanner = function() {
-  this._atrule();
-
   while (this._str) {
-    if (this._skip('rule', this.dom)) {
+    if (this._skip('rule')) {
       continue;
     }
-
     this._atrule() || this._rule();
   }
 };
@@ -42,75 +35,61 @@ CssDom.prototype._match = function(reg) {
     return false;
   }
 
-  this._updatePos(match[0]);
+  this._str = this._str.slice(match[0].length);
   return match;
-};
-
-// Update search position and save line, column
-CssDom.prototype._updatePos = function(str) {
-  var lines = str.match(REG.LINE);
-  var l = str.length;
-  if (lines) this._line += lines.length;
-  var i = str.lastIndexOf('\n');
-
-  this._column = ~i ? l - i : this._column + l;
-  this._str = this._str.slice(l);
-};
-
-// Exception handler
-CssDom.prototype._error = function(msg) {
-  msg = this.filepath + 'SyntaxError:' + msg + 
-        ' at ' + this._line + ' line ' + 
-        this._column + ' column';
-
-  throw new Error(msg);
 };
 
 /**
  * Skip empty string and comment.
  * comment is rule comment or declaration comment.
  */
- // rule comment: /* rule */ a { }
- // declaration comment: a { /* declaration */color: red; }
+// rule comment: /* rule */ a { }
+// declaration comment: a { /* declaration */color: red; }
 CssDom.prototype._skip = function(type, obj) {
-  if (this._match(REG.WHITESPACE)) {
-    return true;
-  }
+  this._match(REG.WHITESPACE);
+  var match = this._match(REG.COMMENT_START);
+  var value;
 
-  if (this._str[0] + this._str[1] !== '/*') {
+  if (match) {
+    match = this._match(REG.COMMENT_END);
+
+    if (match) {
+      value = match[1];
+    } else {
+      value = this._str;
+      this._str = '';
+    }
+
+    if (type === 'declaration') {
+      obj['comment' + fixedProp()] = value;
+    } else if (type === 'rule') {
+      obj = obj || this.dom;
+      obj.push({
+        type: 'comment',
+        value: value
+      });
+    }
+    return true;
+  } else {
     return false;
   }
+};
 
-  var match = this._match(REG.COMMENT_REG);
-
-  if (!match) {
-    return this._error('Unexpected block comment /*');
+CssDom.prototype._first = function(str) {
+  if (this._str[0] === str) {
+    this._str = this._str.slice(1);
+    return true;
+  } else {
+    return false;
   }
-  
-  match = match[1].trim();
-
-  if (type === 'rule') {
-    obj.push({
-      type: 'comment',
-      value: match
-    });
-  } else if (type === 'declaration') {
-    obj['comment' + fixedProp()] = match;
-  }
-
-  return true;
 };
 
 CssDom.prototype._open = function() {
-  if (!this._match(REG.OPEN_BRACE)) {
-    this._error('Missing {');
-  }
+  this._match(REG.OPEN_BRACE);
 };
 
 CssDom.prototype._close = function() {
-  if (!this._match(REG.CLOSE_BRACE)) {
-    this._error('Missing }');
-  }
+  this._match(REG.CLOSE_BRACE);
 };
 
 /**
@@ -120,14 +99,15 @@ CssDom.prototype._close = function() {
  * @media, @keyframes, @font-face, @important
  */
 CssDom.prototype._atrule = function() {
-  if (this._str[0] !== '@') return false;
-
-  var result = this._atcharset() || 
-               this._atmedia() || 
-               this._atkeyframes() ||
-               this._atfontface() ||
-               this._atimport();
-  return result;
+  if (this._str[0] === '@') {
+    var result = this._atcharset() ||
+      this._atmedia() ||
+      this._atkeyframes() ||
+      this._atimport();
+    return result;
+  } else {
+    return false;
+  }
 };
 
 /**
@@ -143,169 +123,13 @@ CssDom.prototype._rule = function(obj) {
     declarations: this._declaration()
   };
 
-  if (obj) {
-    obj.rules.push(data);
-  } else {
-    this.dom.push(data);
-  }
-};
-
-/**
- * @description
- * Scanner @charset
- * @see https://developer.mozilla.org/en-US/docs/Web/CSS/@charset
- * @example
- * @charset "UTF-8";
- *  @charset "UTF-8"; Invalid, there is a character (a space) before the at-rule
- * @charset UTF-8; Invalid, without ' or ", the charset is not a CSS <string>
- */
-CssDom.prototype._atcharset = function() {
-  var match = this._match(/^\s*@charset\s*/);
-
-  if (!match) return false;
-
-  if (this._charsetChecked) {
-    return this._error('@charset must be the first element');
-  }
-
-  this._charsetChecked = true;
-
-  if (REG.WHITESPACE.test(match[0])) {
-    return this._error('@charset can not after a space');
-  }
-
-  var encoding = this._match(/^'([^']+)'|"([^"]+)"/);
-
-  if (!encoding) {
-    return this._error('@charset without \' or ", the charset is not a string');
-  }
-
-  if (!this._match(/^;/)) {
-    return this._error('@charset missing ;');
-  }
-
-  this.dom.push({
-    type: 'charset',
-    value: encoding[1] ? encoding[1] : encoding[2]
-  });
-  return true;
-};
-
-/**
- * @description
- * Match media rule
- * @see https://developer.mozilla.org/en-US/docs/Web/CSS/@media
- * @media <media-query>
- */
-CssDom.prototype._atmedia = function() {
-  var match = this._match(/^@media/);
-
-  if (!match) return false;
-
-  if (!this._match(REG.WHITESPACE)) {
-    return this._error('@media missing spacing before name');
-  }
-  // fixed -o-min-device-pixel-ratio: 2/1 bug
-  var name = this._match(/^[\(\)\s\w-:,\/@]+/);
-
-  if (!name) return this._error('@media missing name');
-
-  this._open();
-  var obj = {
-    type: 'media',
-    value: clean(name[0]),
-    rules: []
-  };
-
-  while (this._str) {
-    this._skip('rule', this.dom);
-
-    if (this._str[0] === '}') {
-      break;
+  if (data.selectors.length) {
+    if (obj) {
+      obj.rules.push(data);
+    } else {
+      this.dom.push(data);
     }
-
-    this._rule(obj);
   }
-
-  this._close();
-  this.dom.push(obj);
-  return true;
-};
-
-/**
- * @description
- * @keyframes <identifier>
- * @see https://developer.mozilla.org/en-US/docs/Web/CSS/@keyframes
- */
-CssDom.prototype._atkeyframes = function() {
-  var match = this._match(/^@([\w-]*)keyframes\s*/);
-
-  if (!match) return false;
-
-  var name = this._match(/^[\w-\s]+/);
-
-  if (!name) return this._error('@keyframes miss name');
-
-  this._open();
-  var obj = {
-    type: 'keyframes',
-    value: clean(name[0]),
-    vendor: match[1],
-    rules: []
-  };
-
-  while (this._str) {
-    this._skip('rule', this.dom);
-
-    if (this._str[0] === '}') {
-      break;
-    }
-
-    this._rule(obj);
-  }
-
-  this._close();
-  this.dom.push(obj);
-  return true;
-};
-
-/**
- * @description
- * Syntax: @font-face
- * @see https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face
- */
-CssDom.prototype._atfontface = function() {
-  if (/^@font-face/.test(this._str)) {
-    this._rule();
-    return true;
-  } else {
-    return false;
-  }
-};
-
-/**
- * @description
- * Syntax: @import url;  or @import url list-of-media-queries;
- * @see https://developer.mozilla.org/en-US/docs/Web/CSS/@import 
- */
-CssDom.prototype._atimport = function() {
-  var match = this._match(/^@import\s*/);
-
-  if (!match) return false;
-
-  var name = this._match(/^('[^']*'|"[^"]*"|[\w-\s\(\),:])+/);
-
-  if (!name) return this._error('@import missing name');
-
-  if (!this._match(/^;/)) {
-    return this._error('@import missing ;');
-  }
-
-  this.dom.push({
-    type: 'import',
-    value: name[0]
-  });
-  return true;
 };
 
 /**
@@ -318,76 +142,174 @@ CssDom.prototype._atimport = function() {
 CssDom.prototype._selector = function() {
   var selector = [];
   var match;
-  var selectorReg = REG.SELECTOR;
 
   while (this._str) {
-    if (this._skip()) {
-      continue;
-    }
+    match = this._match(REG.SELECTOR);
 
-    match = this._match(selectorReg);
-
-    if (!match) {
-      return this._error('Selector missing');
-    }
-    
-    match = clean(stripComment(match[0]));
-    selector.push(match);
-
-    if (this._str[0] === '{') {
+    if (match) {
+      selector.push(clean(match[0]));
+      if (this._first('{')) {
+        break;
+      }
+      this._first(',');
+    } else {
       break;
     }
-
-    this._updatePos(',');
   }
 
-  this._open();
   return selector;
 };
 
+// property: value
 CssDom.prototype._declaration = function() {
   var declaration = {};
-  var property, value;
+  var match;
 
   while (this._str) {
     if (this._skip('declaration', declaration)) {
       continue;
     }
 
-    if (this._str[0] === '}') {
+    if (this._first('}')) {
       break;
     }
 
-    property = this._match(REG.PROPERTY);
+    match = this._match(REG.DECLARATION);
 
-    if (!property) {
-      return this._error('Declaration with property error');
+    if (match) {
+      match = clean(match[0]);
+      var index = match.indexOf(':');
+
+      if (index !== -1) {
+        var key = match.slice(0, index);
+        var value = match.slice(index + 1);
+
+        if (declaration[key]) {
+          key = key + fixedProp();
+        }
+
+        declaration[key] = clean(value);
+      }
+
+      this._first(';');
     }
-
-    if (!this._match(/^\s*:/)) {
-      return this._error('Declaration error with missing :');
-    }
-
-    value = this._match(REG.VALUE);
-
-    if (this._str[0] === '\n' && !/^\s*}/.test(this._str)) {
-      return this._error('Declaration error with missing ;');
-    }
-
-    // Skip to next declaration, fixed like ``color: red; ;``
-    this._match(/^;(\s*;)*/);
-    property = property[0].trim();
-    value = stripComment(value ? value[0] : '').trim();
-    
-    if (declaration[property]) {
-      property = property + fixedProp();
-    }
-
-    declaration[property] = value;
   }
 
-  this._close();
   return declaration;
+};
+
+/**
+ * @description
+ * Scanner @charset
+ * @see https://developer.mozilla.org/en-US/docs/Web/CSS/@charset
+ * @example
+ * @charset "UTF-8";
+ *  @charset "UTF-8"; Invalid, there is a character (a space) before the at-rule
+ * @charset UTF-8; Invalid, without ' or ", the charset is not a CSS <string>
+ */
+CssDom.prototype._atcharset = function() {
+  var match = this._match(REG.CHARSET);
+
+  if (match) {
+    var value = match[1] ? match[1] : match[2];
+    this.dom.push({
+      type: 'charset',
+      value: value.trim()
+    });
+    return true;
+  } else {
+    return false;
+  }
+};
+
+/**
+ * @description
+ * Match media rule
+ * @see https://developer.mozilla.org/en-US/docs/Web/CSS/@media
+ */
+CssDom.prototype._atmedia = function() {
+  var match = this._match(REG.MEDIA);
+
+  if (match) {
+    var obj = {
+      type: 'media',
+      value: clean(match[1]),
+      rules: []
+    };
+    this._first('{');
+
+    while (this._str) {
+      if (this._skip('rule', obj.rules)) {
+        continue;
+      }
+
+      if (this._first('}')) {
+        break;
+      }
+
+      this._rule(obj);
+    }
+
+    this.dom.push(obj);
+    return true;
+  } else {
+    return false;
+  }
+};
+
+/**
+ * @description
+ * @keyframes <identifier>
+ * @see https://developer.mozilla.org/en-US/docs/Web/CSS/@keyframes
+ */
+CssDom.prototype._atkeyframes = function() {
+  var match = this._match(REG.KEYFRAMES);
+
+  if (match) {
+    var obj = {
+      type: 'keyframes',
+      value: clean(match[2]),
+      vendor: match[1],
+      rules: []
+    };
+    this._first('{');
+
+    while (this._str) {
+      if (this._skip('rule', obj.rules)) {
+        continue;
+      }
+
+      if (this._first('}')) {
+        break;
+      }
+
+      this._rule(obj);
+    }
+
+    this.dom.push(obj);
+    return true;
+  } else {
+    return false;
+  }
+};
+
+/**
+ * @description
+ * Syntax: @import url;  or @import url list-of-media-queries;
+ * @see https://developer.mozilla.org/en-US/docs/Web/CSS/@import 
+ */
+CssDom.prototype._atimport = function() {
+  var match = this._match(REG.IMPORT);
+
+  if (match) {
+    this.dom.push({
+      type: 'import',
+      value: match[1]
+    });
+    return true;
+  } else {
+    return false;
+  }
 };
 
 // Traverse css dom
@@ -439,7 +361,7 @@ CssDom.prototype.selector = function(selector, css) {
   this._search(function(dom) {
     if (dom.selectors.indexOf(selector) !== -1) {
       if (css) {
-        this.css(dom, css);  
+        this.css(dom, css);
       } else {
         result.push(dom);
       }
@@ -464,7 +386,7 @@ CssDom.prototype.property = function(property, css) {
   this._search(function(dom) {
     if (dom.declarations[property]) {
       if (css) {
-        this.css(dom, css);  
+        this.css(dom, css);
       } else {
         result.push(dom);
       }
@@ -482,6 +404,7 @@ CssDom.prototype.property = function(property, css) {
  */
 CssDom.prototype.validateDom = function(dom) {
   dom = Array.isArray(dom) ? dom : [dom];
+
   function validate(dom) {
     switch (dom.type) {
       case 'charset':
@@ -523,7 +446,7 @@ CssDom.prototype.validateDom = function(dom) {
         if (!dom.value) {
           throw new Error('@charset miss value');
         }
-        
+
         if (dom.value.indexOf('/*') === 0) {
           throw new Error('comment value do not need /**/');
         }
@@ -617,7 +540,7 @@ CssDom.prototype.stringify = function() {
         break;
       case 'comment':
         if (dom.value.indexOf('!') === 0) {
-          code.push('/*' + dom.value +'*/');
+          code.push('/*' + dom.value + '*/');
         }
     }
   });
@@ -642,17 +565,17 @@ CssDom.prototype.beautify = function(options) {
 
     for (var i in dom.declarations) {
       var key = i.replace(/__\w+$/, '');
-      
+
       if (key === 'comment') {
         declaration = childIndent + options.indent + '/*' + dom.declarations[i] + '*/\n';
       } else {
-        declaration =  childIndent + options.indent + key + ': ' + dom.declarations[i] + ';\n';
+        declaration = childIndent + options.indent + key + ': ' + dom.declarations[i] + ';\n';
       }
-      
+
       code.push(declaration);
     }
 
-    code.push(childIndent + '}' + separateRule);  
+    code.push(childIndent + '}' + separateRule);
   }
 
   this.dom.forEach(function(dom) {
@@ -674,7 +597,7 @@ CssDom.prototype.beautify = function(options) {
         code.push('}' + separateRule);
         break;
       case 'comment':
-        code.push('/*' + dom.value +' */' + separateRule);
+        code.push('/*' + dom.value + ' */' + separateRule);
     }
   });
 
