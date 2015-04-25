@@ -84,14 +84,6 @@ CssDom.prototype._first = function(str) {
   }
 };
 
-CssDom.prototype._open = function() {
-  this._match(REG.OPEN_BRACE);
-};
-
-CssDom.prototype._close = function() {
-  this._match(REG.CLOSE_BRACE);
-};
-
 /**
  * @description
  * Match @ rule
