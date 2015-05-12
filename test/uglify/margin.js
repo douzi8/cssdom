@@ -13,6 +13,21 @@ describe('Uglify margin and padding', function() {
     }]);
   });
 
+  it('important', function() {
+    var rule = [
+      { key: 'padding', value: '10px 15px 10px' },
+      { key: 'padding-right', value: '0 !important' }
+    ];
+    
+    assert.deepEqual(margin(rule), [{
+      key: 'padding',
+      value: '10px 15px'
+    }, {
+      key: 'padding-right',
+      value: '0 !important'
+    }]);
+  });
+
   describe('margin', function() {
     it('one', function() {
       var rule = [
