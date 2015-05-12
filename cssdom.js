@@ -88,14 +88,15 @@ CssDom.prototype._first = function(str) {
  * @description
  * Match @ rule
  * support
- * @media, @keyframes, @font-face, @important
+ * @media, @keyframes, @font-face, @important, @-moz-document
  */
 CssDom.prototype._atrule = function() {
   if (this._str[0] === '@') {
     var result = this._atcharset() ||
       this._atmedia() ||
       this._atkeyframes() ||
-      this._atimport();
+      this._atimport() ||
+      this._atdocument();
     return result;
   } else {
     return false;
@@ -260,6 +261,40 @@ CssDom.prototype._atkeyframes = function() {
   if (match) {
     var obj = {
       type: 'keyframes',
+      value: clean(match[2]),
+      vendor: match[1],
+      rules: []
+    };
+    this._first('{');
+
+    while (this._str) {
+      if (this._skip('rule', obj.rules)) {
+        continue;
+      }
+
+      if (this._first('}')) {
+        break;
+      }
+
+      this._rule(obj);
+    }
+
+    this.dom.push(obj);
+    return true;
+  } else {
+    return false;
+  }
+};
+/**
+ * @description
+ * @see https://developer.mozilla.org/en-US/docs/Web/CSS/@document
+ */
+CssDom.prototype._atdocument = function() {
+  var match = this._match(REG.DOCUMENT);
+
+  if (match) {
+    var obj = {
+      type: 'document',
       value: clean(match[2]),
       vendor: match[1],
       rules: []
@@ -533,6 +568,7 @@ CssDom.prototype.stringify = function() {
       case 'rule':
         rule(dom);
         break;
+      case 'document':
       case 'keyframes':
       case 'media':
         var vendor = dom.vendor ? dom.vendor : '';
@@ -601,6 +637,7 @@ CssDom.prototype.beautify = function(options) {
         break;
       case 'keyframes':
       case 'media':
+      case 'document':
         var vendor = dom.vendor ? dom.vendor : '';
         code.push('@' + vendor + dom.type + ' ' + dom.value + ' {\n');
         dom.rules.forEach(mediarule);
