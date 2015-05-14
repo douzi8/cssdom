@@ -1,5 +1,5 @@
 var assert = require('assert');
-var color = require('../../lib/color');
+var color = require('../../uglify/color');
 
 describe('Uglify css color', function() {
   it('word', function() {

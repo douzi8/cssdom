@@ -1,4 +1,4 @@
-var REG = require('./reg');
+var REG = require('../lib/reg');
 var COLORS = {
   aliceblue: '#f0f8ff',
   antiquewhite: '#faebd7',

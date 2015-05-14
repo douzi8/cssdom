@@ -1,5 +1,5 @@
 var assert = require('assert');
-var margin = require('../../lib/margin');
+var margin = require('../../uglify/margin');
 
 describe('Uglify margin and padding', function() {
   it('none margin', function() {

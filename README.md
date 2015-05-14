@@ -79,6 +79,18 @@ The structure of css dom, it's an array with object item, list item type
   ]
 }
 ```
+* ``document``
+```js
+{
+  type: 'document',
+  vendor: '-moz-',
+  value: 'url-prefix()',
+  rules: [
+    // It's rule type
+    ...
+  ]
+}
+```
 * ``media``
 ```js
 // @media print {body { font-size: 10pt }}

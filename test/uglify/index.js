@@ -1,5 +1,5 @@
 var assert = require('assert');
-var uglify = require('../../lib/uglify');
+var uglify = require('../../uglify/index');
 
 describe('Uglify', function() {
   it('zero', function() {
