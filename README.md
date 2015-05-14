@@ -24,13 +24,10 @@ browserify cssdom.js -s CssDom > cssdom.front.js
 [http://douzi8.github.io/cssdom/](http://douzi8.github.io/cssdom/)
 
 ## API
-### CssDom(str, filepath)
-* {string} ``str`` required  
-css code
-* {string} ``filepath=''``  
-see error msg with filepath
+### CssDom(str)
+* {string} ``str`` required
 ```js
-var css = new CssDom('a{}', 'test/path.css');
+var css = new CssDom('a{}');
 ```
 
 ### css.dom
