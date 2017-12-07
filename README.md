@@ -101,6 +101,19 @@ The structure of css dom, it's an array with object item, list item type
   ]
 }
 ```
+* ``supports``
+```js
+// @supports (display: flex) {}
+
+{
+  type: 'supports',
+  value: 'print',
+  rules: [
+    // It's rule type
+    ...
+  ]
+}
+```
 * ``comment``
 ```js
 // /*1*/

@@ -139,6 +139,15 @@ CssDom.prototype.validateDom = function(dom) {
           throw new Error('@media rules must be array');
         }
         break;
+      case 'supports':
+        if (!dom.value) {
+          throw new Error('@supports miss value');
+        }
+
+        if (!Array.isArray(dom.rules)) {
+          throw new Error('@supports rules must be array');
+        }
+        break;
       case 'comment':
         if (!dom.value) {
           throw new Error('@charset miss value');
@@ -241,6 +250,7 @@ CssDom.prototype.stringify = function() {
       case 'document':
       case 'keyframes':
       case 'media':
+      case 'supports':
         var vendor = dom.vendor ? dom.vendor : '';
         code.push('@' + vendor + dom.type + ' ' + dom.value + '{');
         dom.rules.forEach(mediarule);
@@ -307,6 +317,7 @@ CssDom.prototype.beautify = function(options) {
         break;
       case 'keyframes':
       case 'media':
+      case 'supports':
       case 'document':
         var vendor = dom.vendor ? dom.vendor : '';
         code.push('@' + vendor + dom.type + ' ' + dom.value + ' {\n');
