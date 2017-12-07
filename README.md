@@ -107,7 +107,7 @@ The structure of css dom, it's an array with object item, list item type
 
 {
   type: 'supports',
-  value: 'print',
+  value: '(display: flex)',
   rules: [
     // It's rule type
     ...
