@@ -13,6 +13,11 @@ function uglifyValue(value, key) {
 
   // strip url quote
   value = value.replace(/url\(('[^']+'|"[^"]+")\)/g, function(match, $1) {
+    // `url("data:image/svg+xml")` cann't strip quote
+    if ($1.indexOf('data:') === 1) {
+      return match
+    } 
+
     return 'url(' + stripQuote($1) + ')';
   });
 
