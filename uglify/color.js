@@ -1,5 +1,5 @@
 var REG = require('../lib/reg');
-var COLORS = {
+/*var COLORS = {
   aliceblue: '#f0f8ff',
   antiquewhite: '#faebd7',
   aqua: '#0ff',
@@ -148,7 +148,7 @@ var COLORS = {
   whitesmoke: '#f5f5f5',
   yellow: '#ff0',
   yellowgreen: '#9acd32'
-};
+};*/
 var HEX = '0123456789abcdef';
 
 function toHex(n) {
@@ -162,11 +162,6 @@ function rgbToHex(match, red, green, blue) {
 }
 
 module.exports = function(value) {
-  // Replace color to hex
-  for (var i in COLORS) {
-    value = value.replace(new RegExp('\\b' + i + '\\b'), COLORS[i]);
-  }
-
   // Rgb to hex
   value = value.replace(REG.RBG, rgbToHex);
 

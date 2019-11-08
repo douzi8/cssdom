@@ -13,7 +13,7 @@ describe('css rule', function() {
     var code = '.cls {color: red; ; ;}';
     var css = new CssDom(code);
 
-    assert.equal('.cls{color:#f00}', css.stringify());
+    assert.equal('.cls{color:red}', css.stringify());
   });
 
   it('empty rule', function() {
