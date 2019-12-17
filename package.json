@@ -3,6 +3,7 @@
   "version": "1.0.23",
   "description": "Serialize css structure and stringify css dom, simplified change css code by program, and also support uglify and beautify",
   "main": "cssdom.js",
+  "typings": "cssdom.d.ts",
   "scripts": {
     "test": "mocha --recursive"
   },
